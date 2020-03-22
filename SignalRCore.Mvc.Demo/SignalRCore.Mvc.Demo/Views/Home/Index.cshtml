@@ -6,3 +6,54 @@
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+
+<div class="row">
+    <div class="col-2">Message</div>
+    <div class="col-4"><input type="text" id="messageInput" /></div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="row">
+    <div class="col-6">
+        <input type="button" id="sendButton" value="Send Message" />
+    </div>
+</div>
+
+<div>
+    <ul id="weather"></ul>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+
+<script>
+    $(function () {
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl("/weatherHub")
+            .build();
+
+        connection.on("Broadcast", function (message) {
+            $("#weather").append("<li>" + message + "</li>");
+        });
+
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+    });
+
+    $(function () {
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl("/weatherHub")
+            .build();
+
+        connection.start().then(function () {
+            document.getElementById('sendButton').onclick = function () {
+                var message = document.getElementById("messageInput").value;
+                connection.invoke("BroadcastFromClient", message)
+                    .catch(function (err) {
+                        return console.error(err.toString());
+                    });
+            }
+        });
+    });
+</script>
